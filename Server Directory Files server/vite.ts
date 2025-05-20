@@ -1,3 +1,4 @@
+
 import express, { Express } from "express";
 import type { Server } from "http";
 import { createServer as createViteServer } from "vite";
@@ -9,7 +10,7 @@ export function log(message: string, source = "express") {
 
 export async function setupVite(app: Express, server: Server) {
   const vite = await createViteServer({
-    root: path.join(import.meta.dirname, "../client"),
+    root: path.join(__dirname, "../client"),
     server: {
       hmr: {
         server: server,
@@ -31,8 +32,6 @@ export async function setupVite(app: Express, server: Server) {
       }
 
       // always read the template from disk to get SSR changes
-      // in a non-development environment we would probably cache this
-      // and avoid doing this on every request
       let template = await vite.transformIndexHtml(
         url,
         `<!DOCTYPE html>
@@ -54,8 +53,6 @@ export async function setupVite(app: Express, server: Server) {
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
-    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
 </html>`,
       );
@@ -70,8 +67,8 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  app.use("/", express.static(path.join(import.meta.dirname, "../dist/public")));
+  app.use("/", express.static(path.join(__dirname, "../dist/public")));
   app.get("*", (req, res) => {
-    res.sendFile(path.join(import.meta.dirname, "../dist/public/index.html"));
+    res.sendFile(path.join(__dirname, "../dist/public/index.html"));
   });
-        }
+    }
