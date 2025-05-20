@@ -1,0 +1,92 @@
+import { useEffect } from "react";
+import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { Card } from "@/components/ui/card";
+import Sidebar from "@/components/layout/sidebar";
+import TopBar from "@/components/layout/topbar";
+import Footer from "@/components/layout/footer";
+import AccountsOverview from "@/components/dashboard/accounts-overview";
+import FinancialSummary from "@/components/dashboard/financial-summary";
+import RecentTransactions from "@/components/dashboard/recent-transactions";
+import UpcomingBills from "@/components/dashboard/upcoming-bills";
+import BudgetOverview from "@/components/dashboard/budget-overview";
+import SecurityTips from "@/components/dashboard/security-tips";
+
+export default function DashboardPage() {
+  const [, navigate] = useLocation();
+  const { isAuthenticated, user } = useAuth();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Fetch accounts
+  const { data: accounts, isLoading: isLoadingAccounts } = useQuery({
+    queryKey: ["/api/accounts"],
+    enabled: isAuthenticated,
+  });
+
+  // Fetch transactions
+  const { data: transactions, isLoading: isLoadingTransactions } = useQuery({
+    queryKey: ["/api/transactions"],
+    enabled: isAuthenticated,
+  });
+
+  // Fetch bills
+  const { data: bills, isLoading: isLoadingBills } = useQuery({
+    queryKey: ["/api/bills"],
+    enabled: isAuthenticated,
+  });
+
+  // Fetch budgets
+  const { data: budgets, isLoading: isLoadingBudgets } = useQuery({
+    queryKey: ["/api/budgets"],
+    enabled: isAuthenticated,
+  });
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="dashboard-bg min-h-screen flex flex-col">
+      <TopBar />
+      
+      <div className="flex pt-16 overflow-hidden bg-gray-50">
+        <Sidebar />
+        
+        <div id="main-content" className="relative h-full w-full overflow-y-auto bg-gray-50 lg:ml-64">
+          <main>
+            <div className="px-4 pt-6">
+              <div className="mb-6">
+                <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+                <p className="text-gray-500">
+                  Welcome back, {user?.firstName || "User"}! Here's what's happening with your accounts.
+                </p>
+              </div>
+              
+              <AccountsOverview accounts={accounts || []} isLoading={isLoadingAccounts} />
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <FinancialSummary />
+                <RecentTransactions transactions={transactions || []} isLoading={isLoadingTransactions} />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <UpcomingBills bills={bills || []} isLoading={isLoadingBills} />
+                <BudgetOverview budgets={budgets || []} isLoading={isLoadingBudgets} />
+                <SecurityTips />
+              </div>
+            </div>
+          </main>
+          
+          <Footer />
+        </div>
+      </div>
+    </div>
+  );
+}
