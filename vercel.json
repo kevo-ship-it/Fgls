@@ -2,25 +2,24 @@
   "version": 2,
   "builds": [
     {
-      "src": "client/index.html",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist/public"
-      }
-    },
-    {
-      "src": "server/index.ts",
+      "src": "package.json",
       "use": "@vercel/node"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/server/index.ts"
+      "source": "/api/(.*)",
+      "destination": "/server/index.ts"
     },
     {
-      "src": "/(.*)",
-      "dest": "/dist/public/$1"
+      "source": "/(.*)",
+      "destination": "/"
     }
-  ]
+  ],
+  "functions": {
+    "server/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
 }
